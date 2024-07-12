@@ -51,6 +51,8 @@
     "@typechain/ethers-v6": "^0.5.1",
     "dotenv": "^16.0.3",
     "envfile": "^6.18.0",
+    "fhevm": "^0.5.3",
+    "node-tfhe": "^0.7.1",
     "qrcode": "^1.5.1"
   }
 }
