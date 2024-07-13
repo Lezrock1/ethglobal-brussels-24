@@ -1,6 +1,6 @@
 import { HardhatRuntimeEnvironment } from "hardhat/types";
 import { DeployFunction } from "hardhat-deploy/types";
-import { Contract } from "ethers";
+// import { Contract } from "ethers";
 
 /**
  * Deploys a contract named "YourContract" using the deployer account and
@@ -33,8 +33,8 @@ const deployYourContract: DeployFunction = async function (hre: HardhatRuntimeEn
   });
 
   // Get the deployed contract to interact with it after deploying.
-  const randomPhotoContract = await hre.ethers.getContract<Contract>("RandomPhoto", deployer);
-  console.log("👋 Initial greeting:", await randomPhotoContract.getRandomPhoto([]));
+  // const qstTokenContract = await hre.ethers.getContract<Contract>("QSTToken", deployer);
+  // const addy = await qstTokenContract.getAddress()
 };
 
 export default deployYourContract;

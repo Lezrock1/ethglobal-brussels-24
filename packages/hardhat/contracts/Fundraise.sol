@@ -1,30 +1,98 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.0;
+pragma solidity ^0.8.2;
 
-import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
+import "./QSTToken.sol";
+import "./FundraiseNFT.sol";
+import "./MetaTransaction.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 
-contract FundraiseNFT is ERC721, Ownable(msg.sender) {
-	uint256 private _nextTokenId = 1;
-
-	string[] public imageURIs;
-
-	constructor(
-		string memory _name,
-		string memory _symbol,
-		string[] memory _imageURIs
-	) ERC721(_name, _symbol) {
-		imageURIs = _imageURIs;
+contract Fundraise is
+	MetaTransaction("Fundraise", "1", block.chainid),
+	Ownable(msg.sender)
+{
+	struct FundraiseDetails {
+		string title;
+		string description;
+		uint256 fundingGoal;
+		uint256 deadline;
+		address creatorAddress;
+		uint256 totalRaised;
+		bool isActive;
+		address nftCollectionAddress;
 	}
 
-	function mint(address _to) public onlyOwner {
-		uint256 tokenId = _nextTokenId++;
-		_safeMint(_to, tokenId);
+	mapping(uint256 => FundraiseDetails) public fundraises;
+	mapping(uint256 => mapping(address => uint256)) public contributions;
+
+	uint256 public constant MINIMUM_NFT_CONTRIBUTION = 6.09 ether; // 6.09 QST tokens
+	uint256 public constant NFT_IMAGE_COUNT = 69;
+	uint256 private _nextFundraiseId = 1;
+	QSTToken public token;
+
+	constructor(address _tokenAddress) {
+		token = QSTToken(_tokenAddress);
 	}
 
-	function tokenURI(
-		uint256 _tokenId
-	) public view override returns (string memory) {
-		return imageURIs[_tokenId % imageURIs.length];
+	function createFundraise(
+		string memory _title,
+		string memory _description,
+		uint256 _fundingGoal,
+		uint256 _duration,
+		string memory _nftName,
+		string memory _nftSymbol,
+		string[] memory _nftImageURIs
+	) public {
+		require(
+			_nftImageURIs.length == NFT_IMAGE_COUNT,
+			"Invalid number of NFT image URIs"
+		);
+
+		uint256 fundraiseId = _nextFundraiseId++;
+
+		FundraiseNFT nftCollection = new FundraiseNFT(
+			_nftName,
+			_nftSymbol,
+			_nftImageURIs
+		);
+
+		fundraises[fundraiseId] = FundraiseDetails({
+			title: _title,
+			description: _description,
+			fundingGoal: _fundingGoal,
+			deadline: block.timestamp + _duration,
+			creatorAddress: msg.sender,
+			totalRaised: 0,
+			isActive: true,
+			nftCollectionAddress: address(nftCollection)
+		});
+	}
+
+	function contribute(uint256 _fundraiseId, uint256 _amount) public {
+		FundraiseDetails storage fundraise = fundraises[_fundraiseId];
+		require(fundraise.isActive, "Fundraise is not active");
+		require(block.timestamp <= fundraise.deadline, "Fundraise has ended");
+
+		contributions[_fundraiseId][msg.sender] += _amount;
+		fundraise.totalRaised += _amount;
+		token.transferFrom(msg.sender, address(this), _amount);
+
+		if (_amount >= MINIMUM_NFT_CONTRIBUTION) {
+			FundraiseNFT nftCollection = FundraiseNFT(
+				fundraise.nftCollectionAddress
+			);
+			nftCollection.mint(msg.sender);
+		}
+	}
+
+	function endFundraise(uint256 _fundraiseId) public {
+		FundraiseDetails storage fundraise = fundraises[_fundraiseId];
+		require(fundraise.isActive, "Fundraise is not active");
+		require(
+			block.timestamp > fundraise.deadline,
+			"Fundraise has not ended"
+		);
+
+		fundraise.isActive = false;
+		token.transfer(fundraise.creatorAddress, fundraise.totalRaised);
 	}
 }
