@@ -3,11 +3,9 @@ pragma solidity ^0.8.0;
 
 import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
-import "@openzeppelin/contracts/utils/Counters.sol";
 
-contract FundraiseNFT is ERC721, Ownable {
-	using Counters for Counters.Counter;
-	Counters.Counter private _tokenIdCounter;
+contract FundraiseNFT is ERC721, Ownable(msg.sender) {
+	uint256 private _nextTokenId = 1;
 
 	string[] public imageURIs;
 
@@ -20,15 +18,13 @@ contract FundraiseNFT is ERC721, Ownable {
 	}
 
 	function mint(address _to) public onlyOwner {
-		uint256 tokenId = _tokenIdCounter.current();
-		_tokenIdCounter.increment();
+		uint256 tokenId = _nextTokenId++;
 		_safeMint(_to, tokenId);
 	}
 
 	function tokenURI(
 		uint256 _tokenId
 	) public view override returns (string memory) {
-		require(_exists(_tokenId), "Token does not exist");
 		return imageURIs[_tokenId % imageURIs.length];
 	}
 }
