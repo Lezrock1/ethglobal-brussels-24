@@ -1,6 +1,6 @@
 import { HardhatRuntimeEnvironment } from "hardhat/types";
 import { DeployFunction } from "hardhat-deploy/types";
-// import { Contract } from "ethers";
+import { Contract } from "ethers";
 
 /**
  * Deploys a contract named "YourContract" using the deployer account and
@@ -8,7 +8,7 @@ import { DeployFunction } from "hardhat-deploy/types";
  *
  * @param hre HardhatRuntimeEnvironment object.
  */
-const deployYourContract: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
+const funderQuest: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   /*
     On localhost, the deployer account is the one that comes with Hardhat, which is already funded.
 
@@ -25,7 +25,7 @@ const deployYourContract: DeployFunction = async function (hre: HardhatRuntimeEn
   await deploy("QSTToken", {
     from: deployer,
     // Contract constructor arguments
-    args: [],
+    args: [100000000],
     log: true,
     // autoMine: can be passed to the deploy function to make the deployment process faster on local networks by
     // automatically mining the contract deployment transaction. There is no effect on live networks.
@@ -33,12 +33,23 @@ const deployYourContract: DeployFunction = async function (hre: HardhatRuntimeEn
   });
 
   // Get the deployed contract to interact with it after deploying.
-  // const qstTokenContract = await hre.ethers.getContract<Contract>("QSTToken", deployer);
-  // const addy = await qstTokenContract.getAddress()
+  const qstTokenContract = await hre.ethers.getContract<Contract>("QSTToken", deployer);
+  const addy = await qstTokenContract.getAddress();
+  console.log("The Token-Contract address is:", addy);
+
+  await deploy("Fundraise", {
+    from: deployer,
+    // Contract constructor arguments
+    args: [addy],
+    log: true,
+    // autoMine: can be passed to the deploy function to make the deployment process faster on local networks by
+    // automatically mining the contract deployment transaction. There is no effect on live networks.
+    autoMine: true,
+  });
 };
 
-export default deployYourContract;
+export default funderQuest;
 
 // Tags are useful if you have multiple deploy files and only want to run one of them.
 // e.g. yarn deploy --tags YourContract
-deployYourContract.tags = ["RandomPhoto"];
+funderQuest.tags = ["FunderQuest"];
