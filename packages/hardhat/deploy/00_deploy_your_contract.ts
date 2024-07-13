@@ -22,7 +22,7 @@ const deployYourContract: DeployFunction = async function (hre: HardhatRuntimeEn
   const { deployer } = await hre.getNamedAccounts();
   const { deploy } = hre.deployments;
 
-  await deploy("RandomPhoto", {
+  await deploy("QSTToken", {
     from: deployer,
     // Contract constructor arguments
     args: [],

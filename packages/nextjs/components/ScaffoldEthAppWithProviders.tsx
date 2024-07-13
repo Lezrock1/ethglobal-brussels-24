@@ -50,7 +50,7 @@ export const ScaffoldEthAppWithProviders = ({ children }: { children: React.Reac
   return (
     <DynamicContextProvider
       settings={{
-        environmentId: process.env.DYNAMIC_KEY as string,
+        environmentId: process.env.NEXT_PUBLIC_DYNAMIC_KEY as string,
         walletConnectors: [EthereumWalletConnectors],
       }}
     >

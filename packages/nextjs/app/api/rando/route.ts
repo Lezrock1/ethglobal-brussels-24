@@ -52,10 +52,11 @@ const incoChain = {
 
 const contractAddress = "0xad20F31Eb4784a26D0e9bf09D84Cbd1871A95bDb";
 
-const mnemonic = "spider inherit minute bring festival file duck discover birth power carbon adult";
+const mnemonic = process.env.NEXT_PRIVATE_MNEMONIC;
 
 export async function GET(request: Request) {
   try {
+    console.log("==============", process.env.NEXT_PRIVATE_MNEMONIC);
     const { searchParams } = new URL(request.url);
     const photosN = searchParams.get("photosN");
     const mintedPhotos = searchParams.get("mintedPhotos");
